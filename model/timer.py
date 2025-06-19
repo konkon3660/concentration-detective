@@ -1,22 +1,28 @@
 # 공부 시간 측정
-import RPi.GPIO as GPIO
+import time
 
-# 핀 설정
-LED_PIN = 22
-BUZZER_PIN = 23
+class StudyTimer:
+    def __init__(self):
+        self.start_time = None
+        self.total_study_time = 0
+        self.running = False
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(LED_PIN, GPIO.OUT)
-GPIO.setup(BUZZER_PIN, GPIO.OUT)
+    def start(self):
+        if not self.running:
+            self.start_time = time.time()
+            self.running = True
 
-def led_on():
-    GPIO.output(LED_PIN, True)
+    def stop(self):
+        if self.running:
+            self.total_study_time += time.time() - self.start_time
+            self.running = False
 
-def led_off():
-    GPIO.output(LED_PIN, False)
+    def reset(self):
+        self.start_time = None
+        self.total_study_time = 0
+        self.running = False
 
-def buzzer_on():
-    GPIO.output(BUZZER_PIN, True)
-
-def buzzer_off():
-    GPIO.output(BUZZER_PIN, False)
+    def get_study_time(self):
+        if self.running:
+            return self.total_study_time + (time.time() - self.start_time)
+        return self.total_study_time
