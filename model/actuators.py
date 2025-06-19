@@ -8,6 +8,9 @@ BUZZER_PIN = 23
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(LED_PIN, GPIO.OUT)
 GPIO.setup(BUZZER_PIN, GPIO.OUT)
+GPIO.setwarnings(False)
+
+pwm = GPIO.PWM(BUZZER_PIN, 262)
 
 def led_on():
     GPIO.output(LED_PIN, True)
@@ -16,7 +19,7 @@ def led_off():
     GPIO.output(LED_PIN, False)
 
 def buzzer_on():
-    GPIO.output(BUZZER_PIN, True)
+    pwm.start(50.0)
 
 def buzzer_off():
-    GPIO.output(BUZZER_PIN, False)
+    pwm.start(50.0)
