@@ -1,5 +1,23 @@
-RPi.GPIO
-smbus2
-spidev
-fonts-nanum
-# tkinter
+# 라즈베리 파이 집중도 측정 시스템 의존성
+
+# GPIO 제어
+RPi.GPIO==0.7.1
+
+# SPI 통신 (MCP3008 ADC)
+spidev==3.6
+
+# GUI 프레임워크 (Python 기본 내장, 명시적 표기)
+# tkinter는 Python 표준 라이브러리이므로 별도 설치 불필요
+
+# 시스템 라이브러리 (Python 기본 내장)
+# threading - 멀티스레딩
+# time - 시간 관련 함수
+# os - 운영체제 인터페이스
+
+# 개발/디버깅용 (선택적으로 설치)
+# 아래 패키지들은 센서 데이터 분석 및 시각화를 위한 선택 항목입니다.
+# numpy==1.21.0
+# matplotlib==3.5.0
+
+# 설치 명령어
+# pip install -r requirements.txt
