@@ -192,3 +192,33 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# IDE 및 에디터 관련
+.vscode/                 # Visual Studio Code 설정
+.idea/                   # JetBrains 계열 (PyCharm 등)
+
+# 임시 파일
+*.swp                    # vim 임시 파일
+*.swo
+*.bak
+*.tmp
+
+# 빌드/배포 관련
+*.exe                    # Windows 실행파일
+*.dll                    # Windows 동적 링크 라이브러리
+*.pyd                    # Python C 확장 DLL
+*.pid                    # 서버 PID 파일
+
+# 로그 및 결과 파일
+*.log                    # FastAPI 등 서버 로그
+logs/                    # 로그 디렉토리
+*.csv                    # 결과 저장용 CSV 파일
+*.tsv
+
+# 운영체제 관련
+Thumbs.db                # Windows 미리보기 캐시
+Desktop.ini              # Windows 폴더 설정
+
+# 기타 Python 관련 임시 캐시 (이미 포함되어 있다면 생략 가능)
+*.pyc
+__pycache__/
