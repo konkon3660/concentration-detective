@@ -1,18 +1,19 @@
 # model/actuators.py
-import RPi.GPIO as GPIO
-from config.pins import LED_PIN, BUZZER_PIN
+import RPi.GPIO as GPIO  # 라즈베리파이 GPIO 제어
+from config.pins import LED_PIN, BUZZER_PIN  # 핀 번호 상수
 
 class ActuatorManager:
     def __init__(self):
-        # GPIO 설정
+        # GPIO 모드 설정 (BCM)
         GPIO.setmode(GPIO.BCM)
+        # LED, 부저 핀 출력으로 설정
         GPIO.setup(LED_PIN, GPIO.OUT)
         GPIO.setup(BUZZER_PIN, GPIO.OUT)
         
-        # 부저 PWM 객체 (도 음 높이)
+        # 부저 PWM 객체 생성 (262Hz: 도 음)
         self.buzzer_pwm = GPIO.PWM(BUZZER_PIN, 262)
-        self.led_state = False
-        self.buzzer_state = False
+        self.led_state = False      # LED 상태 저장
+        self.buzzer_state = False   # 부저 상태 저장
     
     def led_on(self):
         """LED 켜기"""
@@ -32,7 +33,7 @@ class ActuatorManager:
             self.led_on()
     
     def buzzer_on(self, duty_cycle=50.0):
-        """부저 켜기"""
+        """부저 켜기 (PWM)"""
         self.buzzer_pwm.start(duty_cycle)
         self.buzzer_state = True
     
@@ -42,19 +43,19 @@ class ActuatorManager:
         self.buzzer_state = False
     
     def buzzer_beep(self, duration=1.0, duty_cycle=50.0):
-        """부저 일정 시간 울리기"""
+        """부저를 일정 시간(초) 울리기"""
         import time
         self.buzzer_on(duty_cycle)
         time.sleep(duration)
         self.buzzer_off()
     
     def cleanup(self):
-        """리소스 정리"""
+        """GPIO 및 리소스 정리"""
         self.buzzer_off()
         self.led_off()
         GPIO.cleanup()
 
-# 전역 액츄에이터 매니저 인스턴스
+# 전역 액츄에이터 매니저 인스턴스 (싱글톤)
 _actuator_manager = None
 
 def get_actuator_manager():
@@ -64,7 +65,7 @@ def get_actuator_manager():
         _actuator_manager = ActuatorManager()
     return _actuator_manager
 
-# 하위 호환성을 위한 래퍼 함수들
+# 하위 호환성 및 간편 사용을 위한 래퍼 함수들
 def led_on():
     get_actuator_manager().led_on()
 
