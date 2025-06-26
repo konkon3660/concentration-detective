@@ -3,9 +3,6 @@
 # GPIO 제어
 RPi.GPIO==0.7.1
 
-# SPI 통신 (MCP3008 ADC)
-spidev==3.6
-
 # GUI 프레임워크 (Python 기본 내장, 명시적 표기)
 # tkinter는 Python 표준 라이브러리이므로 별도 설치 불필요
 

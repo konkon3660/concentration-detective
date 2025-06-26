@@ -13,6 +13,7 @@ class ConcentrationController:
         self.gui = ConcentrationGUI(tk.Tk(), self.toggle_buzzer)  # GUI 인스턴스 생성 및 부저 토글 콜백 연결
         self.motion_last_time = time.time()  # 마지막 움직임 감지 시각
         self.warning_issued = False      # 2차 경고(부저) 발생 여부
+        self.first_warning_issued = False  # 1차 경고 발생 여부
         self.running = True              # 메인 루프 실행 플래그
 
     def toggle_buzzer(self):
@@ -29,42 +30,40 @@ class ConcentrationController:
             try:
                 # 센서 값 읽기
                 motion = sensors.is_motion_detected()  # PIR 센서: 움직임 감지
-                dark = sensors.is_dark()               # 조도 센서: 어두운지 판정
-                light_value = sensors.get_light_value()  # 조도 센서: ADC 값
 
                 # 콘솔 로그 출력
-                print(f"[센서] 움직임: {'감지' if motion else '없음'} | "
-                      f"조도: {light_value:4d} ({'어두움' if dark else '밝음'})")
+                print(f"[센서] 움직임: {'감지' if motion else '없음'}")
 
                 # GUI 상태 문자열 구성
-                status = f"움직임: {'감지됨' if motion else '없음'} | "
-                status += f"조도: {light_value} ({'어두움' if dark else '밝음'})"
+                status = f"움직임: {'감지됨' if motion else '없음'}"
 
                 # 움직임 감지 로직
                 if motion:
                     self.motion_last_time = time.time()  # 마지막 감지 시각 갱신
                     self.warning_issued = False          # 경고 플래그 초기화
+                    self.first_warning_issued = False    # 1차 경고 플래그 초기화
                     self.timer.start()                   # 공부 시간 측정 시작
+                    actuators.led_off()                  # LED 끄기
+                    if self.buzzer_enabled:
+                        actuators.buzzer_off()           # 부저 끄기
                     print("[타이머] 공부 시간 측정 시작")
                 else:
                     elapsed = time.time() - self.motion_last_time  # 마지막 감지 후 경과 시간
-                    if elapsed > MOTION_WARNING_TIME:
+                    
+                    # 1차 경고 (10초)
+                    if elapsed > MOTION_WARNING_TIME and not self.first_warning_issued:
                         print(f"[경고] 1차 경고: {elapsed:.1f}초간 움직임 없음")
                         status += " | ⚠️ 1차 경고"  # 1차 경고 GUI 표시
-                        if elapsed > MOTION_BUZZER_TIME and self.buzzer_enabled:
-                            if not self.warning_issued:
-                                print("[경고] 2차 경고: 부저 작동")
-                                actuators.get_actuator_manager().buzzer_beep(1.0)  # 부저 1초 울림
-                                self.warning_issued = True
-                                status += " | 🔊 부저 울림"  # 2차 경고 GUI 표시
-
-                # 조도에 따른 LED 제어
-                if dark:
-                    actuators.led_on()  # 어두우면 LED ON
-                    status += " | LED: ON"
-                else:
-                    actuators.led_off()  # 밝으면 LED OFF
-                    status += " | LED: OFF"
+                        actuators.led_on()  # LED 켜기
+                        self.first_warning_issued = True
+                    
+                    # 2차 경고 (15초) - 부저 계속 울림
+                    if elapsed > MOTION_BUZZER_TIME and self.buzzer_enabled:
+                        if not self.warning_issued:
+                            print("[경고] 2차 경고: 부저 계속 울림")
+                            actuators.buzzer_continuous_on()  # 부저 계속 울리기
+                            self.warning_issued = True
+                            status += " | 🔊 부저 계속 울림"  # 2차 경고 GUI 표시
 
                 # 공부 시간 표시
                 study_time = self.timer.get_study_time()  # 누적 공부 시간(초)

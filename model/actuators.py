@@ -49,6 +49,10 @@ class ActuatorManager:
         time.sleep(duration)
         self.buzzer_off()
     
+    def buzzer_continuous_on(self):
+        """부저를 계속 울리게 하기"""
+        self.buzzer_on(50.0)
+    
     def cleanup(self):
         """GPIO 및 리소스 정리"""
         self.buzzer_off()
@@ -77,3 +81,6 @@ def buzzer_on():
 
 def buzzer_off():
     get_actuator_manager().buzzer_off()
+
+def buzzer_continuous_on():
+    get_actuator_manager().buzzer_continuous_on()
