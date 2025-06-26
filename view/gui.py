@@ -45,6 +45,25 @@ class ConcentrationGUI:
         )
         self.status_label.pack(fill=tk.X)
 
+        # 현재 상태 표시 프레임 (경고 상태용)
+        self.state_frame = Frame(main_frame, bg="white", relief=tk.RAISED, bd=3)
+        self.state_frame.pack(fill=tk.X, pady=(0, 40))
+
+        self.state_var = StringVar()
+        self.state_var.set("대기 중...")
+        
+        self.state_label = Label(
+            self.state_frame,
+            textvariable=self.state_var,
+            font=("Arial", 28, "bold"),
+            bg="white",
+            fg="#27ae60",
+            justify=tk.CENTER,
+            padx=30,
+            pady=20
+        )
+        self.state_label.pack(fill=tk.X)
+
         # 컨트롤 버튼 프레임
         button_frame = Frame(main_frame, bg="#f0f0f0")
         button_frame.pack(fill=tk.X, pady=(0, 40))
@@ -117,6 +136,21 @@ class ConcentrationGUI:
     def update_status(self, status_text):
         """상태 텍스트 업데이트 (GUI에 표시)"""
         self.status_var.set(status_text)
+        
+        # 경고 상태에 따른 색상 및 상태 메시지 변경
+        if "2차 경고" in status_text:
+            self.state_var.set("🚨 2차 경고 - 부저 울림 중")
+            self.state_label.config(fg="#e74c3c", bg="#ffe6e6")
+        elif "1차 경고" in status_text:
+            self.state_var.set("⚠️ 1차 경고 - LED 켜짐")
+            self.state_label.config(fg="#f39c12", bg="#fff3cd")
+        elif "움직임: 감지됨" in status_text:
+            self.state_var.set("✅ 정상 - 공부 중")
+            self.state_label.config(fg="#27ae60", bg="#d4edda")
+        else:
+            self.state_var.set("⏳ 대기 중")
+            self.state_label.config(fg="#6c757d", bg="white")
+        
         self.root.update_idletasks()
 
     def update_buzzer_button(self, enabled: bool):

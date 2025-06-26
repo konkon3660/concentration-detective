@@ -34,9 +34,6 @@ class ConcentrationController:
                 # 콘솔 로그 출력
                 print(f"[센서] 움직임: {'감지' if motion else '없음'}")
 
-                # GUI 상태 문자열 구성
-                status = f"움직임: {'감지됨' if motion else '없음'}"
-
                 # 움직임 감지 로직
                 if motion:
                     self.motion_last_time = time.time()  # 마지막 감지 시각 갱신
@@ -47,13 +44,18 @@ class ConcentrationController:
                     if self.buzzer_enabled:
                         actuators.buzzer_off()           # 부저 끄기
                     print("[타이머] 공부 시간 측정 시작")
+                    
+                    # GUI 상태 문자열 구성 (움직임 감지 시)
+                    status = f"움직임: 감지됨 ✅ | 공부시간: {self._format_time(self.timer.get_study_time())}"
                 else:
                     elapsed = time.time() - self.motion_last_time  # 마지막 감지 후 경과 시간
+                    
+                    # GUI 상태 문자열 구성 (움직임 없음 시)
+                    status = f"움직임: 없음 ❌ | 미감지시간: {self._format_time(elapsed)}"
                     
                     # 1차 경고 (10초)
                     if elapsed > MOTION_WARNING_TIME and not self.first_warning_issued:
                         print(f"[경고] 1차 경고: {elapsed:.1f}초간 움직임 없음")
-                        status += " | ⚠️ 1차 경고"  # 1차 경고 GUI 표시
                         actuators.led_on()  # LED 켜기
                         self.first_warning_issued = True
                     
@@ -63,14 +65,17 @@ class ConcentrationController:
                             print("[경고] 2차 경고: 부저 계속 울림")
                             actuators.buzzer_continuous_on()  # 부저 계속 울리기
                             self.warning_issued = True
-                            status += " | 🔊 부저 계속 울림"  # 2차 경고 GUI 표시
-
-                # 공부 시간 표시
-                study_time = self.timer.get_study_time()  # 누적 공부 시간(초)
-                if study_time > 0:
-                    minutes = int(study_time // 60)
-                    seconds = int(study_time % 60)
-                    status += f" | 공부시간: {minutes:02d}:{seconds:02d}"
+                    
+                    # 경고 상태 표시
+                    if self.warning_issued:
+                        status += " | ⚠️ 2차 경고 🔊 부저 계속 울림"
+                    elif self.first_warning_issued:
+                        status += " | ⚠️ 1차 경고 💡 LED 켜짐"
+                    
+                    # 공부 시간도 함께 표시
+                    study_time = self.timer.get_study_time()
+                    if study_time > 0:
+                        status += f" | 공부시간: {self._format_time(study_time)}"
 
                 # GUI 상태 업데이트
                 self.gui.update_status(status)
@@ -80,6 +85,12 @@ class ConcentrationController:
                 print(err_msg)
                 self.gui.update_status(f"센서 오류 발생: {e}")  # GUI에도 표시
             time.sleep(SENSOR_CHECK_INTERVAL)  # 주기적 반복
+
+    def _format_time(self, seconds):
+        """시간을 MM:SS 형식으로 포맷팅"""
+        minutes = int(seconds // 60)
+        secs = int(seconds % 60)
+        return f"{minutes:02d}:{secs:02d}"
 
     def cleanup(self):
         """리소스 정리 및 종료 처리"""
